@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
-using Outlook = Microsoft.Office.Interop.Outlook;
-using Office = Microsoft.Office.Core;
+﻿using Office = Microsoft.Office.Core;
 
 namespace outlook_duplicate_remover
 {
@@ -31,7 +25,12 @@ namespace outlook_duplicate_remover
             this.Startup += new System.EventHandler(ThisAddIn_Startup);
             this.Shutdown += new System.EventHandler(ThisAddIn_Shutdown);
         }
-        
+
         #endregion
+
+        protected override Office.IRibbonExtensibility CreateRibbonExtensibilityObject()
+        {
+            return new DuplicateEmailDeletionBar();
+        }
     }
 }
