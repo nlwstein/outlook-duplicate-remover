@@ -95,41 +95,44 @@ namespace outlook_duplicate_remover
             var numberOfItems = 0;
             foreach (var item in CurrentFolder.Items)
             {
-                progress.UpdateProgressBar();
-                numberOfItems += 1;
-                progress.ProgressMessage = string.Format("Processing email {0} of {1}...", numberOfItems.ToString(), totalNumberOfItemsString);
-                // Cast to being a mailitem, so we can grab mail-specific info: 
-                var mailItem = (MailItem)item;
-                // Create a hash of the identifying fields (from, sent timestamp, message body, subject)
-                string mailBody;
-                switch (mailItem.BodyFormat)
+				 if (item is MailItem)
                 {
-                    case OlBodyFormat.olFormatHTML:
-                        mailBody = mailItem.HTMLBody;
-                        break;
-                    case OlBodyFormat.olFormatRichText:
-                        mailBody = mailItem.RTFBody;
-                        break;
-                    case OlBodyFormat.olFormatPlain:
-                    case OlBodyFormat.olFormatUnspecified:
-                    default:
-                        mailBody = mailItem.Body;
-                        break;
-                }
-                // Create a unique identifier that consists of the fields mentioned in prev. comment
-                var uniqueIdentifier = string.Format("{0}_{1}_{2}_{3}", mailItem.SenderEmailAddress, mailItem.SentOn.ToString(), mailBody, mailItem.Subject);
-                // Hash it
-                byte[] hash;
-                var messageBytes = unicodeEncoding.GetBytes(uniqueIdentifier);
-                hash = sha.ComputeHash(messageBytes);
-                if (mailHashes.Any(x => x.SequenceEqual(hash)))
-                {
-                    itemsToMove.Add(mailItem);
-                }
-                else
-                {
-                    mailHashes.Add(hash);
-                }
+					progress.UpdateProgressBar();
+					numberOfItems += 1;
+					progress.ProgressMessage = string.Format("Processing email {0} of {1}...", numberOfItems.ToString(), totalNumberOfItemsString);
+					// Cast to being a mailitem, so we can grab mail-specific info: 
+					var mailItem = (MailItem)item;
+					// Create a hash of the identifying fields (from, sent timestamp, message body, subject)
+					string mailBody;
+					switch (mailItem.BodyFormat)
+					{
+						case OlBodyFormat.olFormatHTML:
+							mailBody = mailItem.HTMLBody;
+							break;
+						case OlBodyFormat.olFormatRichText:
+							mailBody = mailItem.RTFBody;
+							break;
+						case OlBodyFormat.olFormatPlain:
+						case OlBodyFormat.olFormatUnspecified:
+						default:
+							mailBody = mailItem.Body;
+							break;
+					}
+					// Create a unique identifier that consists of the fields mentioned in prev. comment
+					var uniqueIdentifier = string.Format("{0}_{1}_{2}_{3}", mailItem.SenderEmailAddress, mailItem.SentOn.ToString(), mailBody, mailItem.Subject);
+					// Hash it
+					byte[] hash;
+					var messageBytes = unicodeEncoding.GetBytes(uniqueIdentifier);
+					hash = sha.ComputeHash(messageBytes);
+					if (mailHashes.Any(x => x.SequenceEqual(hash)))
+					{
+						itemsToMove.Add(mailItem);
+					}
+					else
+					{
+						mailHashes.Add(hash);
+					}
+				}
             }
             var numOfEmails = 0;
             if (itemsToMove.Count > 0)
